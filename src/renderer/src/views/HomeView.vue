@@ -8,6 +8,6 @@ const handleCreateAboutWin = () => {
 <template>
   <div>
     Home
-    <button @click="handleCreateAboutWin">to about</button>
+    <n-button @click="handleCreateAboutWin">to about</n-button>
   </div>
 </template>

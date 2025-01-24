@@ -8,6 +8,8 @@ export interface IWindowOptions {
   height?: number
   hideMenuBar?: boolean
   location?: string
+  parent?: BrowserWindow
+  modal?: boolean
 }
 
 export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow {
@@ -19,8 +21,15 @@ export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
-    }
+      sandbox: false,
+    },
+    parent: windowOption?.parent,
+    modal: windowOption?.modal,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: 'rgba(0,0,0,0)',
+      height: 32,
+    },
   })
 
   mainWindow.on('ready-to-show', () => {
@@ -34,23 +43,16 @@ export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(
-      process.env['ELECTRON_RENDERER_URL'] + getParsedLocation(windowOption?.location)
+      process.env['ELECTRON_RENDERER_URL'] + getParsedLocation(windowOption?.location),
     )
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-    if (windowOption?.location) {
-      mainWindow.webContents.on('did-finish-load', () => {
-        mainWindow.webContents.executeJavaScript(
-          `window.location.hash = '${getParsedLocation(windowOption.location)}'`
-        )
-      })
-    }
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: windowOption?.location })
   }
 
   return mainWindow
 }
 
 function getParsedLocation(location?: string): string {
-  if (!location) return ''
-  return location.startsWith('/') ? location : '/' + location
+  if (!location) return '/#/'
+  return location.startsWith('/') ? '/#' + location : '/#/' + location
 }
