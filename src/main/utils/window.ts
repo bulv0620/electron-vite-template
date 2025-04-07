@@ -1,4 +1,4 @@
-import { BrowserWindow, shell } from 'electron'
+import { BrowserWindow, nativeTheme, shell } from 'electron'
 import { is } from '@electron-toolkit/utils'
 import { join } from 'path'
 import icon from '../../../resources/icon.png?asset'
@@ -6,16 +6,22 @@ import icon from '../../../resources/icon.png?asset'
 export interface IWindowOptions {
   width?: number
   height?: number
+  minWidth?: number
+  minHeight?: number
   hideMenuBar?: boolean
   location?: string
   parent?: BrowserWindow
   modal?: boolean
+  resizable?: boolean
 }
 
 export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow {
-  const mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: windowOption?.width || 900,
     height: windowOption?.height || 670,
+    minWidth: windowOption?.minWidth || 200,
+    minHeight: windowOption?.minHeight || 50,
+    resizable: windowOption?.resizable,
     show: false,
     autoHideMenuBar: windowOption?.hideMenuBar || true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -28,28 +34,38 @@ export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: 'rgba(0,0,0,0)',
+      symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
       height: 32,
     },
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+  win.on('ready-to-show', () => {
+    win.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
+  win.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(
-      process.env['ELECTRON_RENDERER_URL'] + getParsedLocation(windowOption?.location),
-    )
+    win.loadURL(process.env['ELECTRON_RENDERER_URL'] + getParsedLocation(windowOption?.location))
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: windowOption?.location })
+    win.loadFile(join(__dirname, '../renderer/index.html'), { hash: windowOption?.location })
   }
 
-  return mainWindow
+  const themeUpdateHandler = () => {
+    win.setTitleBarOverlay({
+      symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
+    })
+    win.webContents.send('switch-theme', nativeTheme.themeSource)
+  }
+  nativeTheme.on('updated', themeUpdateHandler)
+  win.on('close', () => {
+    nativeTheme.removeListener('updated', themeUpdateHandler)
+  })
+
+  return win
 }
 
 function getParsedLocation(location?: string): string {

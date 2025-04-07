@@ -3,12 +3,12 @@ import Header from './components/Header.vue'
 </script>
 
 <template>
-  <div class="layout">
+  <n-layout class="layout" style="height: 100vh; width: 100%">
     <div class="layout__header">
       <Header />
     </div>
     <div class="layout__content">
       <router-view></router-view>
     </div>
-  </div>
+  </n-layout>
 </template>

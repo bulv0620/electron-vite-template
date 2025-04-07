@@ -11,7 +11,7 @@ export function createTray(mainWindow: BrowserWindow): Tray {
         showMainWindow()
       },
     },
-    { type: 'separator' },
+    // { type: 'separator' },
     {
       label: '退出',
       click: () => {
