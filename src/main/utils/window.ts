@@ -57,6 +57,7 @@ export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow
   const themeUpdateHandler = () => {
     win.setTitleBarOverlay({
       symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
+      color: '#ffffff00',
     })
     win.webContents.send('switch-theme', nativeTheme.themeSource)
   }
