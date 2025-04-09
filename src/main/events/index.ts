@@ -1,10 +1,19 @@
-import { BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { BrowserWindow, ipcMain, nativeTheme, Tray } from 'electron'
 import { createCustomWindow } from '../utils/window'
 import ElectronStore from 'electron-store'
+import { updateTray } from '../utils/tray'
 
-export function createEventHandler(mainWindow: BrowserWindow, store: ElectronStore) {
+export function createEventHandler({
+  mainWindow,
+  store,
+  tray,
+}: {
+  mainWindow: BrowserWindow
+  store: ElectronStore
+  tray: Tray
+}) {
   // IPC test
-  ipcMain.on('create-about-win', () => {
+  ipcMain.handle('create-about-win', () => {
     createCustomWindow({
       width: 300,
       height: 200,
@@ -25,5 +34,14 @@ export function createEventHandler(mainWindow: BrowserWindow, store: ElectronSto
   ipcMain.handle('switch-theme', (_, type: 'light' | 'dark' | 'system') => {
     nativeTheme.themeSource = type
     store.set('theme', type)
+  })
+
+  // 设置APP语言更新tray
+  ipcMain.handle('switch-lang', (_, lang: string) => {
+    BrowserWindow.getAllWindows().forEach((win) => {
+      win.webContents.send('switch-lang', lang)
+    })
+
+    updateTray(tray, lang, { mainWindow })
   })
 }

@@ -2,7 +2,7 @@ import { computed, ref, watch } from 'vue'
 import { darkTheme } from 'naive-ui'
 const ipcRenderer = window.electron.ipcRenderer
 
-enum EThemeType {
+export enum EThemeType {
   SYSTEM = 'system',
   DARK = 'dark',
   LIGHT = 'light',
@@ -38,12 +38,10 @@ ipcRenderer.on('switch-theme', (_, type: EThemeType) => {
   themeMode.value = type
 })
 
-const useTheme = () => {
+export const useTheme = () => {
   return {
     themeMode,
     currentTheme,
     themeConfig,
   }
 }
-
-export { useTheme, EThemeType }

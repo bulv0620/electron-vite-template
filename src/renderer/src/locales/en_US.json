@@ -1,0 +1,12 @@
+{
+  "theme": {
+    "system": "system",
+    "light": "light",
+    "dark": "dark"
+  },
+  "page": {
+    "home": "Home",
+    "about": "About",
+    "toAbout": "to about"
+  }
+}

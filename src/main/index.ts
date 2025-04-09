@@ -36,8 +36,8 @@ app.whenReady().then(() => {
     }
   })
 
-  createEventHandler(mainWindow, store)
-  createTray(mainWindow)
+  const tray = createTray(mainWindow)
+  createEventHandler({ mainWindow, store, tray })
 })
 
 app.on('window-all-closed', () => {
