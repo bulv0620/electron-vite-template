@@ -33,7 +33,7 @@ export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow
     modal: windowOption?.modal,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: 'rgba(0,0,0,0)',
+      color: '#ffffff00',
       symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
       height: 32,
     },
@@ -57,7 +57,6 @@ export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow
   const themeUpdateHandler = () => {
     win.setTitleBarOverlay({
       symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
-      color: '#ffffff00',
     })
     win.webContents.send('switch-theme', nativeTheme.themeSource)
   }
