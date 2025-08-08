@@ -87,4 +87,4 @@ jobs:
         with:
           files: ./artifacts/**/*  # 上传所有平台打包产物
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
