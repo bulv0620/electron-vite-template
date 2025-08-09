@@ -39,7 +39,7 @@ export function createEventHandler({
 
   // 检查更新
   ipcMain.handle('check-update', () => {
-    return checkUpdate()
+    return checkUpdate(mainWindow)
   })
 
   // 重启并更新

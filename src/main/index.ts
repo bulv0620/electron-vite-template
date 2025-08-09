@@ -3,7 +3,7 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { createCustomWindow } from './utils/window'
 import { createEventHandler } from './events/index'
 import { createTray } from './utils/tray'
-import { initUpdater } from './utils/update'
+// import { checkUpdate } from './utils/update'
 
 const gotTheLock = app.requestSingleInstanceLock({ myKey: 'key' })
 if (!gotTheLock) {
@@ -29,7 +29,7 @@ app.whenReady().then(() => {
   })
 
   const tray = createTray(mainWindow)
-  initUpdater(mainWindow)
+  // checkUpdate(mainWindow)
   createEventHandler({ mainWindow, tray })
 
   app.on('before-quit', async (event) => {
