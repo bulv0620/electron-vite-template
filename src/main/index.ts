@@ -3,7 +3,7 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { createCustomWindow } from './utils/window'
 import { createEventHandler } from './events/index'
 import { createTray } from './utils/tray'
-import { checkUpdate } from './utils/update'
+// import { checkUpdate } from './utils/update'
 
 const gotTheLock = app.requestSingleInstanceLock({ myKey: 'key' })
 if (!gotTheLock) {
@@ -12,8 +12,6 @@ if (!gotTheLock) {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
-
-  checkUpdate()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -24,18 +22,23 @@ app.whenReady().then(() => {
   })
   mainWindow.on('close', (event) => {
     // 在关闭窗口时取消默认行为，隐藏窗口到托盘
-    if (!global.isQuiting) {
+    if (!global.flagQuit) {
       event.preventDefault()
       mainWindow.hide()
     }
   })
 
   const tray = createTray(mainWindow)
+  // checkUpdate(mainWindow)
   createEventHandler({ mainWindow, tray })
-})
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  app.on('before-quit', async (event) => {
+    if (!global.flagQuit) {
+      event.preventDefault() // 阻止默认退出
+      // 退出前操作
+      global.flagQuit = true
+      tray.destroy()
+      app.quit() // 继续退出流程
+    }
+  })
 })

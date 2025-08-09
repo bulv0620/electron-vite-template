@@ -1,11 +1,24 @@
-import { BrowserWindow, Tray, app, Menu } from 'electron'
+import { BrowserWindow, Tray, app, Menu, nativeImage } from 'electron'
 import icon from '../../../resources/icon.png?asset'
+import iconMac from '../../../resources/icon_plain.png?asset'
 import { messages } from '../locales'
 
 export function createTray(mainWindow: BrowserWindow): Tray {
-  const tray = new Tray(icon)
+  let trayIcon = nativeImage.createFromPath(icon)
+  if (process.platform === 'darwin') {
+    trayIcon = nativeImage.createFromPath(iconMac).resize({ width: 18, height: 18 })
+    trayIcon.setTemplateImage(true)
+  }
+  const tray = new Tray(trayIcon)
 
-  const contextMenu = Menu.buildFromTemplate([])
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: messages.en_US.tray.quit,
+      click: () => {
+        app.quit()
+      },
+    },
+  ])
 
   tray.setToolTip('My Electron App')
   tray.setContextMenu(contextMenu)
@@ -33,7 +46,6 @@ export function updateTray(tray: Tray, lang: string, options: { mainWindow: Brow
     {
       label: messages[lang].tray.quit,
       click: () => {
-        global.isQuiting = true
         app.quit()
       },
     },

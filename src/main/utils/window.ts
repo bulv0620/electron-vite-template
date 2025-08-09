@@ -17,26 +17,34 @@ export interface IWindowOptions {
 
 export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow {
   const win = new BrowserWindow({
-    width: windowOption?.width || 900,
-    height: windowOption?.height || 670,
+    width: windowOption?.width || 990,
+    height: windowOption?.height || 660,
     minWidth: windowOption?.minWidth || 200,
     minHeight: windowOption?.minHeight || 50,
+    fullscreenable: false,
     resizable: windowOption?.resizable,
     show: false,
     autoHideMenuBar: windowOption?.hideMenuBar || true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
+      contextIsolation: false,
+      nodeIntegration: true,
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
     },
     parent: windowOption?.parent,
     modal: windowOption?.modal,
     titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#ffffff00',
-      symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
-      height: 32,
-    },
+    ...(process.platform !== 'darwin'
+      ? {
+          titleBarOverlay: {
+            color: '#ffffff00',
+            symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
+            height: 32,
+          },
+        }
+      : {}),
+    icon: join(__dirname, '../../build/icon.ico'),
   })
 
   win.on('ready-to-show', () => {
@@ -55,9 +63,11 @@ export function createCustomWindow(windowOption?: IWindowOptions): BrowserWindow
   }
 
   const themeUpdateHandler = () => {
-    win.setTitleBarOverlay({
-      symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
-    })
+    if (process.platform !== 'darwin' && win.setTitleBarOverlay) {
+      win.setTitleBarOverlay({
+        symbolColor: nativeTheme.shouldUseDarkColors ? '#fff' : '#000',
+      })
+    }
     win.webContents.send('switch-theme', nativeTheme.themeSource)
   }
   nativeTheme.on('updated', themeUpdateHandler)
