@@ -85,9 +85,9 @@ ipcRenderer.on('new-version-ready', () => {
       <p v-if="newVersion" class="margin-col">
         发现新版本：{{ newVersion }} (将自动下载新版本程序)
       </p>
-      <p v-if="newVersionReady" class="margin-col" @click="applyUpdate">
+      <p v-if="newVersionReady" class="margin-col">
         新版本已就绪，
-        <span class="restart-span">点击重启</span>
+        <span class="restart-span" @click="applyUpdate">点击重启</span>
         更新
       </p>
     </div>
