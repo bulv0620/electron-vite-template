@@ -39,13 +39,11 @@ export function createEventHandler({
 
   // 检查更新
   ipcMain.handle('check-update', () => {
-    return checkUpdate(mainWindow)
+    return checkUpdate()
   })
 
   // 重启并更新
   ipcMain.handle('apply-update', () => {
-    // 退出前操作
-    global.flagQuit = true
     autoUpdater.quitAndInstall()
   })
 
