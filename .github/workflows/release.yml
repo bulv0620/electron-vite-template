@@ -3,7 +3,7 @@ name: Build & Release on Tag
 on:
   push:
     tags:
-      - 'v*' # 例如 v1.0.0
+      - 'v*'  # 例如 v1.0.0
 
 jobs:
   build-and-publish:
@@ -13,22 +13,32 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - run: npm install
+      - name: Install dependencies
+        run: npm install
 
-      - name: Build and Publish
+      - name: Build and Publish on Linux/macOS
+        if: matrix.os != 'windows-latest'
+        shell: bash
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            npm run build:win -- --publish always
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
             npm run build:mac -- --publish always
           else
             npm run build:linux -- --publish always
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Build and Publish on Windows
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: npm run build:win -- --publish always
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
