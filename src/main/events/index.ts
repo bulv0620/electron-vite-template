@@ -48,6 +48,9 @@ export function createEventHandler({
 
   // 重启并更新
   ipcMain.handle('apply-update', () => {
+    // 关闭前事件
+    global.flagQuit = true
+    tray.destroy()
     autoUpdater.quitAndInstall()
   })
 
