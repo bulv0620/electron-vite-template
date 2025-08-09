@@ -21,15 +21,14 @@ jobs:
 
       - run: npm install
 
-      # 这里直接让 electron-builder 打包并上传到 GitHub Release
       - name: Build and Publish
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            npx electron-builder --win --x64 --publish always
+            npm run build:win -- --publish always
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            npx electron-builder --mac --x64 --publish always
+            npm run build:mac -- --publish always
           else
-            npx electron-builder --linux --x64 --publish always
+            npm run build:linux -- --publish always
           fi
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }} # 你的 PAT（或者直接用 GITHUB_TOKEN 也行）
+          GH_TOKEN: ${{ secrets.GH_PAT }}
