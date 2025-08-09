@@ -34,6 +34,8 @@ const version = ref('v0.0.0')
 const newVersion = ref('')
 const newVersionReady = ref(false)
 const checkLoading = ref(false)
+const downloadLoading = ref(false)
+const downloaded = ref(false)
 
 async function getCurrentVersion() {
   version.value = await ipcRenderer.invoke('get-current-version')
@@ -43,14 +45,32 @@ async function checkUpdate() {
   checkLoading.value = true
   try {
     const version = await ipcRenderer.invoke('check-update')
-
     if (version) {
       newVersion.value = version
+      downloaded.value = false
+      newVersionReady.value = false
+    } else {
+      newVersion.value = ''
+      downloaded.value = false
+      newVersionReady.value = false
     }
   } catch (error) {
     console.error(error)
   } finally {
     checkLoading.value = false
+  }
+}
+
+async function downloadUpdate() {
+  if (downloadLoading.value || downloaded.value) return
+  downloadLoading.value = true
+  try {
+    await ipcRenderer.invoke('download-update')
+    downloaded.value = true
+  } catch (error) {
+    console.error(error)
+  } finally {
+    downloadLoading.value = false
   }
 }
 
@@ -82,9 +102,16 @@ ipcRenderer.on('new-version-ready', () => {
     <div class="margin-col">
       <n-button :loading="checkLoading" @click="checkUpdate">检查更新</n-button>
       <p class="margin-col">当前版本：{{ version }}</p>
-      <p v-if="newVersion" class="margin-col">
-        发现新版本：{{ newVersion }} (将自动下载新版本程序)
-      </p>
+      <template v-if="newVersion">
+        <p class="margin-col">发现新版本：{{ newVersion }}</p>
+        <n-button
+          class="margin-col"
+          :loading="downloadLoading"
+          :disabled="downloadLoading || downloaded || newVersionReady"
+          @click="downloadUpdate"
+          >点击下载最新版本</n-button
+        >
+      </template>
       <p v-if="newVersionReady" class="margin-col">
         新版本已就绪，
         <span class="restart-span" @click="applyUpdate">点击重启</span>

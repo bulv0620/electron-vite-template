@@ -1,7 +1,7 @@
 import { app, autoUpdater, BrowserWindow, ipcMain, nativeTheme, Tray } from 'electron'
 import { createCustomWindow } from '../utils/window'
 import { updateTray } from '../utils/tray'
-import { checkUpdate } from '../utils/update'
+import { checkUpdate, downloadUpdate } from '../utils/update'
 
 export function createEventHandler({
   mainWindow,
@@ -37,9 +37,13 @@ export function createEventHandler({
     updateTray(tray, lang, { mainWindow })
   })
 
-  // 检查更新
+  // 检查更新（只检查，不下载）
   ipcMain.handle('check-update', () => {
     return checkUpdate(mainWindow)
+  })
+  // 下载更新（用户点击后才下载）
+  ipcMain.handle('download-update', () => {
+    return downloadUpdate(mainWindow)
   })
 
   // 重启并更新
