@@ -3,6 +3,7 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { createCustomWindow } from './utils/window'
 import { createEventHandler } from './events/index'
 import { createTray } from './utils/tray'
+import { checkUpdate } from './utils/update'
 
 const gotTheLock = app.requestSingleInstanceLock({ myKey: 'key' })
 if (!gotTheLock) {
@@ -11,6 +12,8 @@ if (!gotTheLock) {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
+
+  checkUpdate()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
