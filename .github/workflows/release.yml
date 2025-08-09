@@ -3,11 +3,15 @@ name: Build & Release on Tag
 on:
   push:
     tags:
-      - 'v*'  # 例如 v1.0.0
+      - 'v*' # 例如 v1.0.0
 
 jobs:
-  build-win:
-    runs-on: windows-latest
+  build-and-publish:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,81 +20,16 @@ jobs:
           node-version: 20
 
       - run: npm install
-      - run: npm run build:win
 
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: |
-            dist/*.exe
-            dist/*.zip
-            dist/*.yml
-            dist/*.blockmap
-
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - run: npm install
-      - run: npm run build:mac
-
-      - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/*.yml
-            dist/*.blockmap
-
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - run: npm install
-      - run: npm run build:linux
-
-      - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: |
-            dist/*.AppImage
-            dist/*.deb
-            dist/*.zip
-            dist/*.yml
-            dist/*.blockmap
-
-  release:
-    needs: [build-win, build-mac, build-linux]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Display artifact contents
-        run: ls -R ./artifacts
-
-      - name: Create GitHub Release and Upload Assets
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./artifacts/**/*  # 上传所有平台打包产物
+      # 这里直接让 electron-builder 打包并上传到 GitHub Release
+      - name: Build and Publish
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            npx electron-builder --win --x64 --publish always
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            npx electron-builder --mac --x64 --publish always
+          else
+            npx electron-builder --linux --x64 --publish always
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT }} # 你的 PAT（或者直接用 GITHUB_TOKEN 也行）
