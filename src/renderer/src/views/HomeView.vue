@@ -31,28 +31,39 @@ const timestamp = ref(1183135260000)
 
 // 版本
 const version = ref('v0.0.0')
+const newVersion = ref('')
 const newVersionReady = ref(false)
-const newVersion = ref('v0.0.1')
+const checkLoading = ref(false)
 
 async function getCurrentVersion() {
   version.value = await ipcRenderer.invoke('get-current-version')
 }
 
 async function checkUpdate() {
-  await ipcRenderer.invoke('check-update')
+  checkLoading.value = true
+  try {
+    const version = await ipcRenderer.invoke('check-update')
+
+    if (version) {
+      newVersion.value = version
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    checkLoading.value = false
+  }
 }
 
-async function applyUpdate() {
-  await ipcRenderer.invoke('apply-update')
+function applyUpdate() {
+  ipcRenderer.invoke('apply-update')
 }
 
 onMounted(() => {
   getCurrentVersion()
 })
 
-ipcRenderer.on('new-version-ready', (_, version) => {
+ipcRenderer.on('new-version-ready', () => {
   newVersionReady.value = true
-  newVersion.value = version
 })
 </script>
 
@@ -69,11 +80,15 @@ ipcRenderer.on('new-version-ready', (_, version) => {
     </div>
 
     <div class="margin-col">
-      <n-button @click="checkUpdate">检查更新</n-button>
+      <n-button :loading="checkLoading" @click="checkUpdate">检查更新</n-button>
       <p class="margin-col">当前版本：{{ version }}</p>
-      <p v-if="newVersionReady" class="margin-col">
-        新版本已就绪：{{ newVersion }}
-        <span style="color: #409eff" @click="applyUpdate">点击重启应用并更新</span>
+      <p v-if="newVersion" class="margin-col">
+        发现新版本：{{ newVersion }} (将自动下载新版本程序)
+      </p>
+      <p v-if="newVersionReady" class="margin-col" @click="applyUpdate">
+        新版本已就绪，
+        <span class="restart-span">点击重启</span>
+        更新
       </p>
     </div>
   </div>
@@ -82,5 +97,10 @@ ipcRenderer.on('new-version-ready', (_, version) => {
 <style scoped>
 .margin-col {
   margin: 8px;
+}
+
+.restart-span {
+  color: #409eff;
+  cursor: pointer;
 }
 </style>
