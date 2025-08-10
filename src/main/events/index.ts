@@ -39,7 +39,7 @@ export function createEventHandler({
 
   // 检查更新（只检查，不下载）
   ipcMain.handle('check-update', () => {
-    return checkUpdate(mainWindow)
+    return checkUpdate()
   })
   // 下载更新（用户点击后才下载）
   ipcMain.handle('download-update', () => {
