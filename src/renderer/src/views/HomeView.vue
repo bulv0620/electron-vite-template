@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { EThemeType, useTheme } from '@renderer/composables/theme'
 import { languageOptions } from '@renderer/locales'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 const ipcRenderer = window.electron.ipcRenderer
 
@@ -33,9 +33,16 @@ const timestamp = ref(1183135260000)
 const version = ref('v0.0.0')
 const newVersion = ref('')
 const newVersionReady = ref(false)
+const showConfirmModal = ref(false)
 const checkLoading = ref(false)
 const downloadLoading = ref(false)
 const downloaded = ref(false)
+
+watch(newVersionReady, (val) => {
+  if (val) {
+    showConfirmModal.value = true
+  }
+})
 
 async function getCurrentVersion() {
   version.value = await ipcRenderer.invoke('get-current-version')
@@ -105,19 +112,26 @@ ipcRenderer.on('new-version-ready', () => {
       <template v-if="newVersion">
         <p class="margin-col">发现新版本：{{ newVersion }}</p>
         <n-button
+          v-if="!newVersionReady"
           class="margin-col"
           :loading="downloadLoading"
           :disabled="downloadLoading || downloaded || newVersionReady"
           @click="downloadUpdate"
-          >点击下载最新版本</n-button
         >
+          点击下载最新版本
+        </n-button>
+        <span v-else style="margin-left: 8px">更新已下载，等待重启应用</span>
       </template>
-      <p v-if="newVersionReady" class="margin-col">
-        新版本已就绪，
-        <span class="restart-span" @click="applyUpdate">点击重启</span>
-        更新
-      </p>
     </div>
+    <n-modal
+      v-model:show="showConfirmModal"
+      preset="dialog"
+      title="提示"
+      content="新版本已就绪，是否立即重启更新?"
+      positive-text="立即更新"
+      negative-text="稍后"
+      @positive-click="applyUpdate"
+    />
   </div>
 </template>
 

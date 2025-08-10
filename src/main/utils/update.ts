@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
 export function checkUpdate() {
@@ -37,6 +37,9 @@ export function downloadUpdate(mainWindow: BrowserWindow) {
     autoUpdater.downloadUpdate()
 
     autoUpdater.once('update-downloaded', () => {
+      ipcMain.once('apply-update', () => {
+        autoUpdater.quitAndInstall()
+      })
       mainWindow.webContents.send('new-version-ready')
       isDownloading = false
       resolve()
