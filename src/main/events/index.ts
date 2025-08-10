@@ -1,4 +1,4 @@
-import { app, autoUpdater, BrowserWindow, ipcMain, nativeTheme, Tray } from 'electron'
+import { app, autoUpdater, BrowserWindow, dialog, ipcMain, nativeTheme, Tray } from 'electron'
 import { createCustomWindow } from '../utils/window'
 import { updateTray } from '../utils/tray'
 import { checkUpdate, downloadUpdate } from '../utils/update'
@@ -48,10 +48,18 @@ export function createEventHandler({
 
   // 重启并更新
   ipcMain.handle('apply-update', () => {
-    // 关闭前事件
-    global.flagQuit = true
-    tray.destroy()
-    autoUpdater.quitAndInstall()
+    dialog
+      .showMessageBox({
+        type: 'info',
+        buttons: ['立即更新', '稍后'],
+        title: '提示',
+        message: '程序即将重启并更新，请确认',
+      })
+      .then((result) => {
+        if (result.response === 0) {
+          autoUpdater.quitAndInstall()
+        }
+      })
   })
 
   // 获取当前版本号

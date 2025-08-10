@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog } from 'electron'
+import { BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
 export function checkUpdate() {
@@ -39,18 +39,6 @@ export function downloadUpdate(mainWindow: BrowserWindow) {
     autoUpdater.once('update-downloaded', () => {
       mainWindow.webContents.send('new-version-ready')
       isDownloading = false
-      dialog
-        .showMessageBox({
-          type: 'info',
-          buttons: ['立即更新', '稍后'],
-          title: '更新完成',
-          message: '新版本已下载，是否立即安装？',
-        })
-        .then((result) => {
-          if (result.response === 0) {
-            autoUpdater.quitAndInstall()
-          }
-        })
       resolve()
     })
 
