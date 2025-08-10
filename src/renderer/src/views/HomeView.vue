@@ -29,6 +29,10 @@ const themeOptions = computed(() => [
 
 const timestamp = ref(1183135260000)
 
+function testDialog() {
+  ipcRenderer.invoke('test-dialog')
+}
+
 // 版本
 const version = ref('v0.0.0')
 const newVersion = ref('')
@@ -81,16 +85,15 @@ async function downloadUpdate() {
   }
 }
 
-function applyUpdate() {
-  ipcRenderer.invoke('apply-update')
-}
-
 onMounted(() => {
   getCurrentVersion()
 })
 
 ipcRenderer.on('new-version-ready', () => {
   newVersionReady.value = true
+})
+ipcRenderer.on('new-version-download-failed', (_, msg) => {
+  console.log(msg)
 })
 </script>
 
@@ -104,6 +107,10 @@ ipcRenderer.on('new-version-ready', () => {
       <n-select v-model:value="themeMode" :options="themeOptions" style="width: 200px" />
       <n-select v-model:value="locale" :options="languageOptions" style="width: 200px" />
       <n-date-picker v-model:value="timestamp" type="date" />
+    </div>
+
+    <div class="margin-col">
+      <n-button @click="testDialog">测试dialog</n-button>
     </div>
 
     <div class="margin-col">
@@ -123,15 +130,6 @@ ipcRenderer.on('new-version-ready', () => {
         <span v-else style="margin-left: 8px">更新已下载，等待重启应用</span>
       </template>
     </div>
-    <n-modal
-      v-model:show="showConfirmModal"
-      preset="dialog"
-      title="提示"
-      content="新版本已就绪，是否立即重启更新?"
-      positive-text="立即更新"
-      negative-text="稍后"
-      @positive-click="applyUpdate"
-    />
   </div>
 </template>
 

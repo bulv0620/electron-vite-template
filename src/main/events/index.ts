@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain, nativeTheme, Tray } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, Tray } from 'electron'
 import { createCustomWindow } from '../utils/window'
 import { updateTray } from '../utils/tray'
 import { checkUpdate, downloadUpdate } from '../utils/update'
+import { messages } from '../locales'
 
 export function createEventHandler({
   mainWindow,
@@ -33,7 +34,7 @@ export function createEventHandler({
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('switch-lang', lang)
     })
-
+    global.lang = lang
     updateTray(tray, lang, { mainWindow })
   })
 
@@ -49,5 +50,18 @@ export function createEventHandler({
   // 获取当前版本号
   ipcMain.handle('get-current-version', () => {
     return app.getVersion()
+  })
+
+  // 测试dialog
+  ipcMain.handle('test-dialog', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      buttons: [
+        messages[global.lang || 'en_US'].update.confirm,
+        messages[global.lang || 'en_US'].update.later,
+      ],
+      title: messages[global.lang || 'en_US'].update.prompt,
+      message: messages[global.lang || 'en_US'].update.confirmMessage,
+    })
   })
 }

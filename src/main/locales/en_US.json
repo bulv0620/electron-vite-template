@@ -2,5 +2,11 @@
   "tray": {
     "show": "show",
     "quit": "quit"
+  },
+  "update": {
+    "confirm": "confirm",
+    "later": "later",
+    "prompt": "prompt",
+    "confirmMessage": "New version is ready, update now?"
   }
 }

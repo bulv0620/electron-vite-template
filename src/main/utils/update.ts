@@ -1,5 +1,6 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, dialog } from 'electron'
 import { autoUpdater } from 'electron-updater'
+import { messages } from '../locales'
 
 export function checkUpdate() {
   return new Promise<string>((resolve) => {
@@ -36,13 +37,24 @@ export function downloadUpdate(mainWindow: BrowserWindow) {
     isDownloading = true
     autoUpdater.downloadUpdate()
 
-    autoUpdater.once('update-downloaded', () => {
-      ipcMain.once('apply-update', () => {
-        autoUpdater.quitAndInstall()
-      })
+    autoUpdater.once('update-downloaded', async () => {
       mainWindow.webContents.send('new-version-ready')
       isDownloading = false
       resolve()
+
+      const result = await dialog.showMessageBox({
+        type: 'info',
+        buttons: [
+          messages[global.lang || 'en_US'].update.confirm,
+          messages[global.lang || 'en_US'].update.later,
+        ],
+        title: messages[global.lang || 'en_US'].update.prompt,
+        message: messages[global.lang || 'en_US'].update.confirmMessage,
+      })
+
+      if (result.response === 0) {
+        autoUpdater.quitAndInstall()
+      }
     })
 
     autoUpdater.once('error', (error) => {
